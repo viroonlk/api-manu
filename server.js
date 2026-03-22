@@ -30,6 +30,7 @@ app.get('/api/search-player', async (req, res) => {
     }
 });
 
+
 // 3. API นัดถัดไป (สำหรับปุ่มนัดต่อไป)
 app.get('/api/next-match', async (req, res) => {
     try {
@@ -58,6 +59,31 @@ app.get('/api/next-match', async (req, res) => {
         }
     } catch (error) {
         res.json({ reply_text: "ง่า... ตอนนี้ Devie เช็คตารางแข่งไม่ได้ฮะ ลองใหม่อีกทีนะ" });
+    }
+});
+// 4. API ดูรายชื่อนักเตะแมนยูทั้งหมด (Squad)
+app.get('/api/all-players', async (req, res) => {
+    try {
+        // team=33 คือ แมนยู
+        const response = await axios.get('https://v3.football.api-sports.io/players/squads?team=33', {
+            headers: {
+                'x-rapidapi-key': API_KEY, // ใช้ API_KEY ตัวเดิมที่ประกาศไว้ด้านบนได้เลย
+                'x-rapidapi-host': 'v3.football.api-sports.io'
+            }
+        });
+
+        // ดึง array ของนักเตะทั้งหมดมา
+        const players = response.data.response[0].players;
+        
+        // เอาชื่อนักเตะมารวมกัน (ดึงมาโชว์สัก 15 คนแรก จะได้ไม่ยาวเกินไปจนแชทรกลายตาฮะ)
+        const playerList = players.slice(0, 15).map(p => `⚽️ ${p.name} (${p.position})`).join('\n');
+
+        res.json({ 
+            reply_text: `รายชื่อนักเตะทีมชุดใหญ่ของเราฮะ! 🔴\n\n${playerList}\n\n...และคนอื่นๆ อีกเพียบเลยฮะ! 😈` 
+        });
+
+    } catch (error) {
+        res.json({ reply_text: "ง่า... ตอนนี้ Devie เข้าห้องแต่งตัวไปเช็คชื่อนักเตะไม่ได้ฮะ ลองใหม่อีกทีนะ" });
     }
 });
 
